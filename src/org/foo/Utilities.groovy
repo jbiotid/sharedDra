@@ -6,4 +6,8 @@ class Utilities implements Serializable {
     println "Bar Hello world!"
     steps.sh "${steps.tool 'Maven'}/bin/mvn -o ${args}"
   }
+
+  static builder(script) {
+        println "static Bar Hello world!"
+    }
 }
