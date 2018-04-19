@@ -7,12 +7,12 @@ def checkOutFrom(repo, componentName, gitUrl) {
       env.IBM_CLOUD_DEVOPS_APP_NAME = "${componentName}"
       env.IBM_CLOUD_DEVOPS_TOOLCHAIN_ID = 'f63cd10b-2639-46a2-829c-89bc7188eb30'
 
-      publishBuildRecord gitBranch: "${gitBranch}", gitCommit: "${gitResult.GIT_COMMIT}", gitRepo: "${gitUrl}", result:"SUCCESS"
+      // publishBuildRecord gitBranch: "${gitBranch}", gitCommit: "${gitResult.GIT_COMMIT}", gitRepo: "${gitUrl}", result:"SUCCESS"
 
-      publishTestResult type:'unittest', fileLocation: 'test-results/unit/results.xml'
-      publishTestResult type:'fvt', fileLocation: 'test-results/func/results.xml', environment: 'DEV'
+      // publishTestResult type:'unittest', fileLocation: 'test-results/unit/results.xml'
+      // publishTestResult type:'fvt', fileLocation: 'test-results/func/results.xml', environment: 'DEV'
 
-      evaluateGate policy: 'Service Tests', forceDecision: 'false'
+      // evaluateGate policy: 'Service Tests', forceDecision: 'false'
     }
 }
 
