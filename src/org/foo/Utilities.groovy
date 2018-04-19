@@ -8,6 +8,10 @@ class Utilities implements Serializable {
   }
 
   static builder(script) {
+
+      String filename = "/tmp/nastytest.txt"  
+// creates a new file test.txt  
+      boolean success = new File(filename).createNewFile() 
         println "static Bar Hello world!"
     }
 }
