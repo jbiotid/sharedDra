@@ -1,24 +1,6 @@
-package org.foo
+package org.TestUpload
 
-// class Utilities implements Serializable {
-//   def steps
-//   Utilities(steps) {this.steps = steps}
-//   def mvn(args) {
-//     println "Bar Hello world!"
-//     steps.sh "${steps.tool 'Maven'}/bin/mvn -o ${args}"
-//   }
-
-//   static builder(script) {
-
-//       String filename = "/tmp/nastytest.txt"  
-// // creates a new file test.txt  
-//       boolean success = new File(filename).createNewFile() 
-//         println "static Bar Hello world!"
-//     }
-// }
-
-def checkOutFrom(repo) {
-  //git url: "git@github.com:jbiotid/${repo}"
+def checkOutFrom(repo, bmApiKey, componentName, gitUrl) {
    withCredentials([string(credentialsId: 'BM_API_KEY', variable: 'bmApiKey')]) {
       env.IBM_CLOUD_DEVOPS_API_KEY = "${bmApiKey}"
       env.IBM_CLOUD_DEVOPS_ORG = 'UCCloud'
