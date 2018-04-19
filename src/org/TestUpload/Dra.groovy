@@ -1,6 +1,6 @@
 package org.TestUpload
 
-def checkOutFrom(repo, bmApiKey, componentName, gitUrl) {
+def checkOutFrom(repo, componentName, gitUrl) {
    withCredentials([string(credentialsId: 'BM_API_KEY', variable: 'bmApiKey')]) {
       env.IBM_CLOUD_DEVOPS_API_KEY = "${bmApiKey}"
       env.IBM_CLOUD_DEVOPS_ORG = 'UCCloud'
