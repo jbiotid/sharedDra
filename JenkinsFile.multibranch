@@ -1,0 +1,82 @@
+node {
+    @Library('DeploymentRiskAnalysis') _
+    /* project specific */
+    def repoName = "release-events-api"
+    def componentName = "release-events-api"
+
+    /* docker registry */
+    def artifactoryRegistryRepo = 'hyc-ucreporting-docker-local.artifactory.swg-devops.com:443'
+    def artifactoryRegistryUrl = "https://${artifactoryRegistryRepo}/artifactory/hyc-ucreporting-docker-local/"
+    def artifactoryRegistryCredentialsId = 'sunil-artifactory'
+
+    /* git */
+    def gitBranch = env.BRANCH_NAME
+    echo "building from branch ${gitBranch}"
+
+    def gitResult = checkout scm
+
+    def gitUrl = gitResult.GIT_URL
+    def gitCredentialsId = 'Sunil_Git_IBM'
+
+    /* docker image info */
+    def majorVersion = "1.0"
+    def tag = majorVersion + ".${env.BUILD_ID}"
+    def imageName = "${repoName}:${tag}"
+    def imageNameDash = "${imageName.replaceAll(':', '-')}"
+
+    currentBuild.displayName = "${tag}"
+    currentBuild.description = "Build from branch ${gitBranch}"
+
+    /* kube cluster */
+    def bluemixRegImageName = "registry.ng.bluemix.net/uccontainers/${repoName}"
+
+    def exceptionThrown = false
+    try {
+        docker.image('mongo:3.6').withRun("-p 27017:27017") { c ->
+
+            docker.image('node:carbon').inside("-v $HOME:$HOME --link ${c.id}:db") {
+                stage('Lint') {
+                    sh 'node --version'
+                    sh 'npm install'
+                    sh 'npm run lint'
+                }
+                stage('Build') {
+                    sh 'npm run build'
+                }
+                stage('Unit Tests') {
+                    sh 'npm run test-unit:xml'
+                    junit "test-results/unit/results.xml"
+                }
+                stage('Functional Tests') {
+                    sh 'MONGO_URL=mongodb://db:27017 npm run test-func:xml'
+                    junit "test-results/func/results.xml"
+                }
+                stage("Upload DRA") {
+                    def utils = new com.urbancode.TestResult.Dra()
+                    utils.uploadServiceTestResult(componentName, gitUrl, gitBranch, gitResult)
+                }
+                stage("Build and Upload Artifactory") {
+                    docker.withRegistry("${artifactoryRegistryUrl}", "${artifactoryRegistryCredentialsId}") {
+                        /* Push the container to the custom Registry */
+                        customImage = docker.build("${imageName}")
+                        customImage.push()
+                    }
+                }
+            }
+        }
+    } catch(err) {
+        exceptionThrown = true
+        println "Excpetion was caught in try block of jenkins job"
+        println err
+    } finally {
+        sh "cd ../"
+        sh "rm -rf ${tag}"
+        sh "rm -rf ${tag}@tmp"
+        sh "docker rmi -f ${imageName}"
+        sh "docker rmi -f ${artifactoryRegistryRepo}/${repoName}:${tag}"
+        sh "docker rmi -f ${bluemixRegImageName}:${tag}"
+        if (exceptionThrown) {
+          error("Exception was thrown earlier")
+        }
+    }
+}
